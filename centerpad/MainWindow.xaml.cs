@@ -27,7 +27,7 @@ namespace centerpad
         string? appchoisi;
 
         string Path_extension = "Extensions";
-        string version = "0.1.2.1";
+        string version = "0.1.2.2";
 
 
         public MainWindow()
@@ -39,9 +39,16 @@ namespace centerpad
             if (!Directory.Exists(Path_extension))
                 Directory.CreateDirectory(Path_extension);
 
+            
+            string[] cheminsComplets = Directory.GetFiles(Path_extension, "*.exe");
+            string[] nomsFichiers = new string[cheminsComplets.Length];
 
-            string[] files = Directory.GetFiles(Path_extension, "*.exe");
-            select_app.ItemsSource = files;
+            for (int i = 0; i < cheminsComplets.Length; i++)
+            {
+                nomsFichiers[i] = cheminsComplets[i].Substring(11);
+            }
+
+            select_app.ItemsSource = nomsFichiers;
         }
 
         private void ComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -51,7 +58,7 @@ namespace centerpad
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
-            Process.Start(appchoisi);
+            Process.Start(Path_extension + "\\" + appchoisi);
         }
     }
 }
