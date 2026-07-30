@@ -27,7 +27,7 @@ namespace centerpad
         string? appchoisi;
 
         string Path_extension = "Extensions";
-        string version = "0.1.2.2";
+        string version = "0.1.2.3";
 
 
         public MainWindow()
@@ -42,10 +42,13 @@ namespace centerpad
             
             string[] cheminsComplets = Directory.GetFiles(Path_extension, "*.exe");
             string[] nomsFichiers = new string[cheminsComplets.Length];
+            int nomsFichiersSansExtension;
 
             for (int i = 0; i < cheminsComplets.Length; i++)
             {
-                nomsFichiers[i] = cheminsComplets[i].Substring(11);
+                nomsFichiersSansExtension = Convert.ToInt32(cheminsComplets[i].Length - 11 - 4);
+                nomsFichiers[i] = cheminsComplets[i].Substring(11, nomsFichiersSansExtension);
+                
             }
 
             select_app.ItemsSource = nomsFichiers;
@@ -58,7 +61,7 @@ namespace centerpad
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
-            Process.Start(Path_extension + "\\" + appchoisi);
+            Process.Start(Path_extension + "\\" + appchoisi + ".exe");
         }
     }
 }
