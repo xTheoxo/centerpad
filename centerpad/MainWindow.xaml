@@ -8,9 +8,8 @@
         Title="MainWindow" Height="445" Width="779">
     <Grid>
         <Label x:Name="label" HorizontalAlignment="Left" Margin="720,383,0,0" VerticalAlignment="Top" AutomationProperties.IsRequiredForForm="True" Content="label"/>
-        <TextBox x:Name="jsp" HorizontalAlignment="Left" Margin="527,215,0,0" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="229" Height="106"/>
-        <ComboBox x:Name="select_app" HorizontalAlignment="Left" Margin="311,193,0,0" VerticalAlignment="Top" Width="120" SelectionChanged="ComboBox_SelectionChanged"/>
-        <Button Content="Button" HorizontalAlignment="Left" Margin="336,138,0,0" VerticalAlignment="Top" Height="35" Width="70" Click="Button_Click"/>
+        <ComboBox x:Name="select_app" HorizontalAlignment="Left" Margin="311,215,0,0" VerticalAlignment="Top" Width="120" SelectionChanged="ComboBox_SelectionChanged"/>
+        <Button Content="Lancer" HorizontalAlignment="Left" Margin="336,127,0,0" VerticalAlignment="Top" Height="35" Width="70" Click="Button_Click"/>
 
     </Grid>
 </Window>
