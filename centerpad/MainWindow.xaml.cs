@@ -18,6 +18,11 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Net.Http;
 using System.Text.Json;
+using System.Net.Http;
+using System.Text.Json;
+using System.Collections.Generic;
+using System.Windows.Controls;
+
 
 namespace centerpad
 {
@@ -30,7 +35,7 @@ namespace centerpad
         string? appchoisi;
 
         string Path_extension = "Extensions";
-        string version = "0.1.2.4";
+        string version = "0.1.2.5";
 
 
         public MainWindow()
@@ -43,6 +48,7 @@ namespace centerpad
                 Directory.CreateDirectory(Path_extension);
 
             VerifierMiseAJour();
+            ChargerExtensionsDisponibles();
 
             string[] cheminsComplets = Directory.GetFiles(Path_extension, "*.exe");
             string[] nomsFichiers = new string[cheminsComplets.Length];
@@ -111,6 +117,77 @@ namespace centerpad
                 // Pas grave si ça échoue (pas d'internet, repo sans release, etc.) — on ignore silencieusement ou on log
                 Console.WriteLine("Erreur vérification MAJ : " + ex.Message);
             }
+        }
+        public class ExtensionDisponible
+        {
+            public string Nom { get; set; }
+            public string Description { get; set; }
+            public string UrlTelechargement { get; set; }
+        }
+
+        async Task<List<ExtensionDisponible>> ChercherExtensionsGitHub()
+        {
+            var extensions = new List<ExtensionDisponible>();
+            string[] comptes = { "xTheoxo", "Valentin30-wq" }; // <-- remplace par le vrai pseudo GitHub de ton pote
+
+            using var client = new HttpClient();
+            client.DefaultRequestHeaders.Add("User-Agent", "centerpad-app");
+
+            foreach (var compte in comptes)
+            {
+                try
+                {
+                    string urlRecherche = $"https://api.github.com/search/repositories?q=user:{compte}+topic:centerpad-extension";
+                    string json = await client.GetStringAsync(urlRecherche);
+
+                    using var doc = JsonDocument.Parse(json);
+                    var items = doc.RootElement.GetProperty("items");
+
+                    foreach (var repo in items.EnumerateArray())
+                    {
+                        string nom = repo.GetProperty("name").GetString();
+                        string description = repo.TryGetProperty("description", out var d) ? d.GetString() ?? "" : "";
+                        string owner = repo.GetProperty("owner").GetProperty("login").GetString();
+
+                        // Aller chercher la dernière release de ce repo précis
+                        try
+                        {
+                            string jsonRelease = await client.GetStringAsync($"https://api.github.com/repos/{owner}/{nom}/releases/latest");
+                            using var docRelease = JsonDocument.Parse(jsonRelease);
+                            var assets = docRelease.RootElement.GetProperty("assets");
+
+                            if (assets.GetArrayLength() > 0)
+                            {
+                                string urlTelechargement = assets[0].GetProperty("browser_download_url").GetString();
+
+                                extensions.Add(new ExtensionDisponible
+                                {
+                                    Nom = nom,
+                                    Description = description,
+                                    UrlTelechargement = urlTelechargement
+
+                                });
+                                
+                            }
+                        }
+                        catch
+                        {
+                            // Ce repo n'a pas de release publiée, on l'ignore
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Erreur recherche extensions pour {compte} : {ex.Message}");
+                }
+            }
+            return extensions;
+        }
+        async void ChargerExtensionsDisponibles()
+        {
+            var extensions = await ChercherExtensionsGitHub();
+
+            jsp.ItemsSource = extensions.Select(ext => ext.Nom).ToList();
         }
     }
 }
