@@ -34,9 +34,10 @@ namespace centerpad
     {
 
         string? appchoisi;
+        string? chemin_extension;
 
         string Path_extension = "Extensions";
-        string version = "0.1.2.6";
+        string version = "0.1.2.8";
 
 
         public MainWindow()
@@ -76,16 +77,13 @@ namespace centerpad
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
-            if (appchoisi == null)
-            {
-                MessageBox.Show("Veuillez sélectionner une application à lancer.", "Erreur", MessageBoxButton.OK, MessageBoxImage.Error);
-                return;
-            }
-            else
-                Process.Start(Path_extension + "\\" + appchoisi + ".exe");
+            Process.Start(Path_extension + "\\" + appchoisi + ".exe");
         }
+        /*
+            MessageBox.Show("Veuillez sélectionner une application à lancer.", "Erreur", MessageBoxButton.OK, MessageBoxImage.Error);
+            return;
+        */
 
-        
 
         async void VerifierMiseAJour()
         {
@@ -212,6 +210,25 @@ namespace centerpad
             if (jsp.SelectedItem != null)
                 button_extension_dl.IsEnabled = true;
 
+        }
+
+        private async void button_extension_dl_Click(object sender, RoutedEventArgs e)
+        {
+            
+            chemin_extension = System.IO.Path.Combine(Path_extension, jsp.SelectedItem.ToString() + ".exe");
+
+            // Voir doc Microsoft > HttpClient
+
+            using (HttpClient client = new HttpClient())
+            using (HttpResponseMessage response = await client.GetAsync("https://github.com/xTheoxo/Dow_gui/releases/download/1.4.0x/Dow_gui-1.4.0.exe"))
+            {
+                response.EnsureSuccessStatusCode();
+
+                using (FileStream fs = new FileStream(chemin_extension, FileMode.Create))
+                {
+                    await response.Content.CopyToAsync(fs);
+                }
+            }
         }
     }
 }
