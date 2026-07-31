@@ -1,12 +1,21 @@
 ﻿using Microsoft.CSharp;
 using System.CodeDom.Compiler;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.IO.Compression;
+using System.Net.Http;
+using System.Net.Http;
 using System.Net.Http;
 using System.Reflection;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json;
+using System.Text.Json;
+using System.Text.RegularExpressions;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Documents;
@@ -16,13 +25,6 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
-using System.Net.Http;
-using System.Text.Json;
-using System.Net.Http;
-using System.Text.Json;
-using System.Collections.Generic;
-using System.Windows.Controls;
-using System.Security.Cryptography;
 
 
 namespace centerpad
@@ -38,7 +40,7 @@ namespace centerpad
         string url;
 
         string Path_extension = "Extensions";
-        string version = "0.1.3.1";
+        string version = "0.1.3.4";
 
         // background -> #FF444242
         public MainWindow()
@@ -59,31 +61,76 @@ namespace centerpad
 
             ChargeExtensionInstalle();           
         }
-        private void ChargeExtensionInstalle()
-        {
-            string[] cheminsComplets = Directory.GetFiles(Path_extension, "*.exe");
-            string[] nomsFichiers = new string[cheminsComplets.Length];
-            int nomsFichiersSansExtension;
+       
 
-            for (int i = 0; i < cheminsComplets.Length; i++)
+    private void ChargeExtensionInstalle()
+    {
+        var apps = new List<AppInstallee>();
+
+        // Cas A : les .exe directement dans Extensions\
+        string[] exeDirects = Directory.GetFiles(Path_extension, "*.exe");
+        foreach (var chemin in exeDirects)
+        {
+            string nom = System.IO.Path.GetFileNameWithoutExtension(chemin);
+            apps.Add(new AppInstallee
             {
-                nomsFichiersSansExtension = Convert.ToInt32(cheminsComplets[i].Length - 11 - 4);
-                nomsFichiers[i] = cheminsComplets[i].Substring(11, nomsFichiersSansExtension);
-            }
-            select_app.ItemsSource = nomsFichiers;
+                Nom = nom,
+                Version = null,          // pas de version connue pour ce cas
+                CheminExe = chemin
+            });
         }
+
+        // Cas B : les dossiers contenant un .exe, avec version dans le nom du dossier
+        string[] dossiers = Directory.GetDirectories(Path_extension);
+        foreach (var dossier in dossiers)
+        {
+            string[] exeDansDossier = Directory.GetFiles(dossier, "*.exe");
+            if (exeDansDossier.Length == 0)
+                continue; // pas de .exe dedans, on ignore
+
+            string nomDossier = System.IO.Path.GetFileName(dossier); // ex: "Dow_gui-1.4.1"
+            var (nom, version) = ExtraireNomEtVersion(nomDossier);
+
+            apps.Add(new AppInstallee
+            {
+                Nom = nom,
+                Version = version,
+                CheminExe = exeDansDossier[0] // le premier .exe trouvé dans le dossier
+            });
+        }
+
+        select_app.ItemsSource = apps;
+        select_app.DisplayMemberPath = "Affichage";
+    }
+
+    private (string nom, string version) ExtraireNomEtVersion(string nomDossier)
+    {
+        // Cherche un motif du style "NomApp-1.4.1" à la fin du nom
+        var match = Regex.Match(nomDossier, @"^(.*)-(\d+(\.\d+)*)$");
+
+        if (match.Success)
+        {
+            string nom = match.Groups[1].Value;
+            string version = match.Groups[2].Value;
+            return (nom, version);
+        }
+
+        // Si ça ne correspond pas au motif attendu, on garde le nom du dossier tel quel
+        return (nomDossier, null);
+    }
 
         private void ComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (select_app.SelectedItem != null)
                 button_select_app.IsEnabled = true;
-
-            appchoisi = select_app.SelectedItem.ToString();
         }
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
-            Process.Start(Path_extension + "\\" + appchoisi + ".exe");
+            if (select_app.SelectedItem is not AppInstallee appChoisie)
+                return;
+
+            Process.Start(appChoisie.CheminExe);
         }
         /*
             MessageBox.Show("Veuillez sélectionner une application à lancer.", "Erreur", MessageBoxButton.OK, MessageBoxImage.Error);
@@ -143,7 +190,10 @@ namespace centerpad
         {
             public string Nom { get; set; }
             public string Description { get; set; }
+            public string Version { get; set; }
             public string UrlTelechargement { get; set; }
+
+            public string Affichage => Version != null ? $"{Nom} v{Version}" : Nom;
         }
 
         async Task<List<ExtensionDisponible>> ChercherExtensionsGitHub()
@@ -180,13 +230,15 @@ namespace centerpad
                             if (assets.GetArrayLength() > 0)
                             {
                                 string urlTelechargement = assets[0].GetProperty("browser_download_url").GetString();
+                                string versionTag = docRelease.RootElement.GetProperty("tag_name").GetString();
+                                string versionNettoyee = versionTag?.TrimStart('v');
 
                                 extensions.Add(new ExtensionDisponible
                                 {
                                     Nom = nom,
                                     Description = description,
+                                    Version = versionNettoyee,
                                     UrlTelechargement = urlTelechargement
-                                    
                                 });
                             }
                         }
@@ -208,7 +260,7 @@ namespace centerpad
             var extensions = await ChercherExtensionsGitHub();
 
             jsp.ItemsSource = extensions;
-            jsp.DisplayMemberPath = "Nom"; // affiche juste le nom dans la liste déroulante
+            jsp.DisplayMemberPath = "Affichage"; // au lieu de "Nom"
         }
 
         private void jsp_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -221,23 +273,56 @@ namespace centerpad
         {
             button_extension_dl.IsEnabled = false;
 
-            // A regarder
             if (jsp.SelectedItem is not ExtensionDisponible extensionChoisie)
                 return;
 
-            chemin_extension = System.IO.Path.Combine(Path_extension, extensionChoisie.Nom + ".exe");
+            // Récupère le nom du fichier tel quel depuis l'URL GitHub
+            string nomFichierOrigine = System.IO.Path.GetFileName(new Uri(extensionChoisie.UrlTelechargement).LocalPath);
+            string extension = System.IO.Path.GetExtension(nomFichierOrigine).ToLower();
 
-            // Voir doc Microsoft > HttpClient
+            // On garde le nom d'origine, pas besoin de le reconstruire
+            string cheminTelecharge = System.IO.Path.Combine(Path_extension, nomFichierOrigine);
 
             using (HttpClient client = new HttpClient())
-            using (HttpResponseMessage response = await client.GetAsync(extensionChoisie.UrlTelechargement))
             {
-                response.EnsureSuccessStatusCode();
+                client.DefaultRequestHeaders.Add("User-Agent", "centerpad-app");
 
-                using (FileStream fs = new FileStream(chemin_extension, FileMode.Create))
+                using (HttpResponseMessage response = await client.GetAsync(extensionChoisie.UrlTelechargement))
                 {
-                    await response.Content.CopyToAsync(fs);
+                    if (!response.IsSuccessStatusCode)
+                    {
+                        MessageBox.Show($"Échec du téléchargement : {response.StatusCode}", "Erreur");
+                        button_extension_dl.IsEnabled = true;
+                        return;
+                    }
+
+                    using (FileStream fs = new FileStream(cheminTelecharge, FileMode.Create))
+                    {
+                        await response.Content.CopyToAsync(fs);
+                    }
                 }
+            }
+
+            if (extension == ".zip")
+            {
+                var dossiersAvant = Directory.GetDirectories(Path_extension);
+
+                ZipFile.ExtractToDirectory(cheminTelecharge, Path_extension, overwriteFiles: true);
+
+                var dossiersApres = Directory.GetDirectories(Path_extension);
+                string nouveauDossier = dossiersApres.Except(dossiersAvant).FirstOrDefault()
+                    ?? dossiersApres.FirstOrDefault(d =>
+                        System.IO.Path.GetFileName(d).StartsWith(extensionChoisie.Nom, StringComparison.OrdinalIgnoreCase));
+
+                File.Delete(cheminTelecharge);
+            }
+            else if (extension == ".exe")
+            {
+                // Rien à faire de plus, le .exe est déjà nommé correctement et à la bonne place
+            }
+            else
+            {
+                MessageBox.Show($"Type de fichier non géré : {extension}", "Erreur");
             }
 
             ChargeExtensionInstalle();
@@ -246,6 +331,14 @@ namespace centerpad
         private void button_maj_Click(object sender, RoutedEventArgs e)
         {
 
+        }
+        public class AppInstallee
+        {
+            public string Nom { get; set; }
+            public string Version { get; set; }
+            public string CheminExe { get; set; }   // chemin complet vers le .exe à lancer
+
+            public string Affichage => Version != null ? $"{Nom} (v{Version})" : Nom;
         }
     }
 }
