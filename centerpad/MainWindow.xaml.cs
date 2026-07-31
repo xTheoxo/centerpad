@@ -40,7 +40,7 @@ namespace centerpad
         string url;
 
         string Path_extension = "Extensions";
-        string version = "0.1.3.4";
+        string version = "0.1.3.5";
 
         // background -> #FF444242
         public MainWindow()
@@ -164,7 +164,7 @@ namespace centerpad
                         "Mise à jour disponible",
                         MessageBoxButton.YesNo,
                         MessageBoxImage.Information);
-
+                    
                     if (resultat == MessageBoxResult.Yes)
                     {
                         Process.Start(new ProcessStartInfo(urlTelechargement) { UseShellExecute = true });
@@ -172,7 +172,7 @@ namespace centerpad
                     else if (resultat == MessageBoxResult.No)
                     {
                         label_maj.Visibility = Visibility.Visible;
-                        button_maj.Visibility = Visibility.Visible;
+                        //button_maj.Visibility = Visibility.Visible;
                     }
                 }
                 else
@@ -330,7 +330,7 @@ namespace centerpad
 
         private void button_maj_Click(object sender, RoutedEventArgs e)
         {
-
+            Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
         }
         public class AppInstallee
         {
