@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:centerpad"
         mc:Ignorable="d"
         Title="MainWindow" Height="445" Width="779">
-    <Grid>
+    <Grid Background="White">
         <Label x:Name="label" HorizontalAlignment="Left" Margin="720,383,0,0" VerticalAlignment="Top" AutomationProperties.IsRequiredForForm="True" Content="label"/>
         <ComboBox x:Name="select_app" HorizontalAlignment="Left" Margin="211,226,0,0" VerticalAlignment="Top" Width="120" SelectionChanged="ComboBox_SelectionChanged" />
         <Button x:Name="button_select_app" Content="Lancer" HorizontalAlignment="Left" Margin="236,149,0,0" VerticalAlignment="Top" Height="35" Width="70" Click="Button_Click" IsEnabled="False"/>

@@ -40,7 +40,7 @@ namespace centerpad
         string Path_extension = "Extensions";
         string version = "0.1.3.1";
 
-
+        // background -> #FF444242
         public MainWindow()
         {
             InitializeComponent();
