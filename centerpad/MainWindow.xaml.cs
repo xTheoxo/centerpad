@@ -230,5 +230,10 @@ namespace centerpad
                 }
             }
         }
+
+        private void button_maj_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
     }
 }
