@@ -189,5 +189,12 @@ namespace centerpad
 
             jsp.ItemsSource = extensions.Select(ext => ext.Nom).ToList();
         }
+
+        private void jsp_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (jsp.SelectedItem != null)
+                button_extension_dl.IsEnabled = true;
+
+        }
     }
 }
