@@ -38,7 +38,7 @@ namespace centerpad
         string url;
 
         string Path_extension = "Extensions";
-        string version = "0.1.3.0";
+        string version = "0.1.3.1";
 
 
         public MainWindow()
@@ -240,7 +240,7 @@ namespace centerpad
                 }
             }
 
-
+            ChargeExtensionInstalle();
         }
 
         private void button_maj_Click(object sender, RoutedEventArgs e)
