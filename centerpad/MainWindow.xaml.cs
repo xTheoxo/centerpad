@@ -68,6 +68,9 @@ namespace centerpad
 
         private void ComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            if (select_app.SelectedItem != null)
+                button_select_app.IsEnabled = true;
+
             appchoisi = select_app.SelectedItem.ToString();
         }
 

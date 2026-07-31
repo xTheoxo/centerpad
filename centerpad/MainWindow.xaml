@@ -9,7 +9,7 @@
     <Grid>
         <Label x:Name="label" HorizontalAlignment="Left" Margin="720,383,0,0" VerticalAlignment="Top" AutomationProperties.IsRequiredForForm="True" Content="label"/>
         <ComboBox x:Name="select_app" HorizontalAlignment="Left" Margin="211,226,0,0" VerticalAlignment="Top" Width="120" SelectionChanged="ComboBox_SelectionChanged" />
-        <Button Content="Lancer" HorizontalAlignment="Left" Margin="236,149,0,0" VerticalAlignment="Top" Height="35" Width="70" Click="Button_Click"/>
+        <Button x:Name="button_select_app" Content="Lancer" HorizontalAlignment="Left" Margin="236,149,0,0" VerticalAlignment="Top" Height="35" Width="70" Click="Button_Click" IsEnabled="False"/>
         <ComboBox x:Name="jsp" HorizontalAlignment="Left" Margin="488,226,0,0" VerticalAlignment="Top" Width="120" SelectionChanged="jsp_SelectionChanged" />
         <Button x:Name="button_extension_dl" Content="Button" HorizontalAlignment="Left" Margin="499,149,0,0" VerticalAlignment="Top" Height="35" Width="77" IsEnabled="False"/>
         <Label x:Name="label_maj" Content="Une mise à jour est disponible!" HorizontalAlignment="Left" Margin="19,18,0,0" VerticalAlignment="Top"/>
