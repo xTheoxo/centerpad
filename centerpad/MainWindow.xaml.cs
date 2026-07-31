@@ -35,9 +35,10 @@ namespace centerpad
 
         string? appchoisi;
         string? chemin_extension;
+        string url;
 
         string Path_extension = "Extensions";
-        string version = "0.1.2.8";
+        string version = "0.1.2.9";
 
 
         public MainWindow()
@@ -143,7 +144,7 @@ namespace centerpad
         async Task<List<ExtensionDisponible>> ChercherExtensionsGitHub()
         {
             var extensions = new List<ExtensionDisponible>();
-            string[] comptes = { "xTheoxo", "Valentin30-wq" }; // <-- remplace par le vrai pseudo GitHub de ton pote
+            string[] comptes = { "xTheoxo", "Valentin30-wq" };
 
             using var client = new HttpClient();
             client.DefaultRequestHeaders.Add("User-Agent", "centerpad-app");
@@ -180,9 +181,8 @@ namespace centerpad
                                     Nom = nom,
                                     Description = description,
                                     UrlTelechargement = urlTelechargement
-
+                                    
                                 });
-                                
                             }
                         }
                         catch
@@ -202,25 +202,28 @@ namespace centerpad
         {
             var extensions = await ChercherExtensionsGitHub();
 
-            jsp.ItemsSource = extensions.Select(ext => ext.Nom).ToList();
+            jsp.ItemsSource = extensions;
+            jsp.DisplayMemberPath = "Nom"; // affiche juste le nom dans la liste déroulante
         }
 
         private void jsp_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (jsp.SelectedItem != null)
                 button_extension_dl.IsEnabled = true;
-
         }
 
         private async void button_extension_dl_Click(object sender, RoutedEventArgs e)
         {
-            
-            chemin_extension = System.IO.Path.Combine(Path_extension, jsp.SelectedItem.ToString() + ".exe");
+            // A regarder
+            if (jsp.SelectedItem is not ExtensionDisponible extensionChoisie)
+                return;
+
+            chemin_extension = System.IO.Path.Combine(Path_extension, extensionChoisie.Nom + ".exe");
 
             // Voir doc Microsoft > HttpClient
 
             using (HttpClient client = new HttpClient())
-            using (HttpResponseMessage response = await client.GetAsync("https://github.com/xTheoxo/Dow_gui/releases/download/1.4.0x/Dow_gui-1.4.0.exe"))
+            using (HttpResponseMessage response = await client.GetAsync(extensionChoisie.UrlTelechargement))
             {
                 response.EnsureSuccessStatusCode();
 
