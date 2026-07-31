@@ -22,6 +22,7 @@ using System.Net.Http;
 using System.Text.Json;
 using System.Collections.Generic;
 using System.Windows.Controls;
+using System.Security.Cryptography;
 
 
 namespace centerpad
@@ -35,12 +36,15 @@ namespace centerpad
         string? appchoisi;
 
         string Path_extension = "Extensions";
-        string version = "0.1.2.5";
+        string version = "0.1.2.6";
 
 
         public MainWindow()
         {
             InitializeComponent();
+
+            label_maj.Visibility = Visibility.Hidden;
+            button_maj.Visibility = Visibility.Hidden;
 
             label.Content = version;
 
@@ -100,6 +104,7 @@ namespace centerpad
 
                 if (versionDistanteNettoyee != version)
                 {
+                    
                     var resultat = MessageBox.Show(
                         $"Une nouvelle version est disponible : {versionDistanteNettoyee} (actuelle : {version}).\nTélécharger maintenant ?",
                         "Mise à jour disponible",
@@ -110,6 +115,15 @@ namespace centerpad
                     {
                         Process.Start(new ProcessStartInfo(urlTelechargement) { UseShellExecute = true });
                     }
+                    else if (resultat == MessageBoxResult.No)
+                    {
+                        label_maj.Visibility = Visibility.Visible;
+                        button_maj.Visibility = Visibility.Visible;
+                    }
+                }
+                else
+                {
+                    label_maj.Visibility = Visibility.Hidden;
                 }
             }
             catch (Exception ex)
