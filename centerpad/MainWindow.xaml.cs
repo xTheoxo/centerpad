@@ -38,7 +38,7 @@ namespace centerpad
         string url;
 
         string Path_extension = "Extensions";
-        string version = "0.1.2.9";
+        string version = "0.1.3.0";
 
 
         public MainWindow()
@@ -54,8 +54,13 @@ namespace centerpad
                 Directory.CreateDirectory(Path_extension);
 
             VerifierMiseAJour();
+
             ChargerExtensionsDisponibles();
 
+            ChargeExtensionInstalle();           
+        }
+        private void ChargeExtensionInstalle()
+        {
             string[] cheminsComplets = Directory.GetFiles(Path_extension, "*.exe");
             string[] nomsFichiers = new string[cheminsComplets.Length];
             int nomsFichiersSansExtension;
@@ -63,7 +68,7 @@ namespace centerpad
             for (int i = 0; i < cheminsComplets.Length; i++)
             {
                 nomsFichiersSansExtension = Convert.ToInt32(cheminsComplets[i].Length - 11 - 4);
-                nomsFichiers[i] = cheminsComplets[i].Substring(11, nomsFichiersSansExtension);   
+                nomsFichiers[i] = cheminsComplets[i].Substring(11, nomsFichiersSansExtension);
             }
             select_app.ItemsSource = nomsFichiers;
         }
@@ -214,6 +219,8 @@ namespace centerpad
 
         private async void button_extension_dl_Click(object sender, RoutedEventArgs e)
         {
+            button_extension_dl.IsEnabled = false;
+
             // A regarder
             if (jsp.SelectedItem is not ExtensionDisponible extensionChoisie)
                 return;
@@ -232,6 +239,8 @@ namespace centerpad
                     await response.Content.CopyToAsync(fs);
                 }
             }
+
+
         }
 
         private void button_maj_Click(object sender, RoutedEventArgs e)
